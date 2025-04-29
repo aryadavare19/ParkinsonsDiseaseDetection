@@ -1,1 +1,2 @@
 # ParkinsonsDiseaseDetection
+This web application helps in the early detection of Parkinson’s disease using machine learning models trained on voice recordings and patient questionnaire responses. It features real-time predictions, a user-friendly interface. In addition to the detection system, the website provides a curated list of hospitals across five major Indian cities and an information page to educate users about Parkinson’s symptoms, treatment options, and lifestyle guidance.
