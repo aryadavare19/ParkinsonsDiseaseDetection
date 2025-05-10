@@ -3,6 +3,6 @@ flask-cors
 joblib
 numpy
 librosa
-xgboost
+lightgbm
 scikit-learn
 gunicorn
