@@ -1,14 +1,13 @@
 from flask import Flask, request, jsonify, render_template
-from flask_cors import CORS  # Allows frontend to access backend from different ports
+from flask_cors import CORS
 import joblib
 import numpy as np
 import librosa
-import xgboost as xgb  
+import lightgbm as lgb
 import os
 
-
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+CORS(app)
 
 @app.route('/')
 def home():
@@ -24,22 +23,22 @@ def questionnaire():
 
 @app.route('/parkinsonsinfo')
 def parkinsonsinfo():
-    return render_template("parkinsonsinfo.html")  # Page for Parkinson’s Disease Information
+    return render_template("parkinsonsinfo.html")
 
 @app.route('/hospitals')
 def hospitals():
-    return render_template("hospitals.html")  # New hospitals page
+    return render_template("hospitals.html")
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # Get script's directory
-model_path = os.path.join(BASE_DIR, "My_New_Flask_app_zipped", "My_New_Flask_app", "xgb_parkinsons_model.pkl")
-scaler_path = os.path.join(BASE_DIR, "My_New_Flask_app_zipped", "My_New_Flask_app", "scaler.pkl")
+# Paths
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+model_path = os.path.join(BASE_DIR, "lgb_parkinsons_model.pkl")
+scaler_path = os.path.join(BASE_DIR, "scalerlgb.pkl")
 
-
-# Load trained model and scaler
+# Load model and scaler
 try:
-    model = joblib.load("xgb_parkinsons_model.pkl")
-    scaler = joblib.load("scaler.pkl")
-    print("Model and scaler loaded successfully.")
+    model = joblib.load(model_path)
+    scaler = joblib.load(scaler_path)
+    print("LightGBM model and scaler loaded successfully.")
 except Exception as e:
     print(f"Error loading model/scaler: {e}")
     model, scaler = None, None
@@ -73,7 +72,6 @@ def extract_features_from_audio(file):
         print(f"Feature Extraction Error: {e}")
         return str(e)
 
-
 @app.route("/predict", methods=["POST"])
 def predict():
     try:
@@ -87,11 +85,8 @@ def predict():
         if isinstance(features, str):
             return jsonify({"error": f"Feature Extraction Error: {features}"})
 
-        # Convert to XGBoost DMatrix
-        dmatrix_features = xgb.DMatrix(features)
-
-        # Get prediction probability
-        probability = model.predict(dmatrix_features)[0]
+        # Predict using LightGBM
+        probability = model.predict(features)[0]
 
         result = "Parkinson's Detected 🟠" if probability > 0.5 else "Healthy ✅"
 
